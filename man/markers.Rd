@@ -12,13 +12,13 @@ with names formatted as \code{CellType#customN}, where
 the marker gene set.
 }
 \source{
-Cell-type-specific marker gene sets compiled for ctOWAS analysis.
+Cell-type-specific marker gene sets compiled for ctPWAS analysis.
 }
 \usage{
 markers
 }
 \description{
-A total of 9 marker gene sets for 3 cell types used in ctOWAS
+A total of 9 marker gene sets for 3 cell types used in ctPWAS
 for estimating cell-type proportions from bulk gene expression data.
 Each cell type has multiple marker gene sets.
 }

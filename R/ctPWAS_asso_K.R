@@ -1,7 +1,7 @@
 #' Test K cell-type-specific molecular-trait associations
 #'
 #' @description
-#' Performs ctOWAS association testing for K cell types by combining
+#' Performs ctPWAS association testing for K cell types by combining
 #' cell-type-specific SNP prediction weights, GWAS summary statistics and
 #' genotype data from a linkage-disequilibrium (LD) reference panel. The
 #' function returns separate (marginal) cell-type statistics, and joint
@@ -9,7 +9,7 @@
 #' cell-type-specific molecular traits.
 #'
 #' @param W A numeric P by K matrix of cell-type-specific SNP prediction
-#'   weights (for example, \code{W} from \code{\link{ctOWAS_train_K}}). Rows
+#'   weights (for example, \code{W} from \code{\link{ctPWAS_train_K}}). Rows
 #'   are SNPs and columns are cell types. SNP order must match the columns of
 #'   \code{x_g} and the elements of \code{gwas_z_score}.
 #' @param gwas_z_score A numeric vector of length P containing GWAS
@@ -107,14 +107,14 @@
 #'     \code{"invalid_variance_separate"} or \code{"collinear_separate"}.}
 #' }
 #'
-#' @seealso \code{\link{ctOWAS_train_K}} for training the weights \code{W};
+#' @seealso \code{\link{ctPWAS_train_K}} for training the weights \code{W};
 #'   \code{\link{safe_ACAT}}.
 #'
 #' @examples
 #' \dontrun{
-#' fit <- ctOWAS_train_K(y = expr_gene, x = geno, pi_k = cell_fractions)
+#' fit <- ctPWAS_train_K(y = expr_gene, x = geno, pi_k = cell_fractions)
 #'
-#' res <- ctOWAS_assoc_test_K(
+#' res <- ctPWAS_assoc_test_K(
 #'   W            = fit$W,          # P x K
 #'   gwas_z_score = gwas$beta / gwas$se,
 #'   x_g          = ref_geno,       # reference individuals x P
@@ -128,7 +128,7 @@
 #' }
 #'
 #' @export
-ctOWAS_assoc_test_K <- function(W,
+ctPWAS_assoc_test_K <- function(W,
                                  gwas_z_score,
                                  x_g,
                                  n0,
@@ -149,9 +149,9 @@ ctOWAS_assoc_test_K <- function(W,
 
   if (ncol(x_g) != p) {stop("Number of SNPs (columns) in x_g must match nrow(W).")}
   # calculate separate analysis
-  sig_l <- .ctOWAS_col_sds(x_g)
+  sig_l <- .ctPWAS_col_sds(x_g)
   Yhat <- x_g %*% W
-  sig2_g <- .ctOWAS_col_vars(Yhat)
+  sig2_g <- .ctPWAS_col_vars(Yhat)
   num <- colSums(W * (gwas_z_score * sig_l))
 
   Z_sep <- rep(NA_real_, K)
@@ -259,7 +259,7 @@ regularized_inverse_cov <- function(X, reg_scale = 0.1) {
   )
 }
 
-.ctOWAS_col_sds <- function(x) {
+.ctPWAS_col_sds <- function(x) {
   if (requireNamespace("matrixStats", quietly = TRUE)) {
     return(matrixStats::colSds(x))
   }
@@ -267,7 +267,7 @@ regularized_inverse_cov <- function(X, reg_scale = 0.1) {
          (nrow(x) - 1))
 }
 
-.ctOWAS_col_vars <- function(x) {
+.ctPWAS_col_vars <- function(x) {
   if (requireNamespace("matrixStats", quietly = TRUE)) {
     return(matrixStats::colVars(x))
   }

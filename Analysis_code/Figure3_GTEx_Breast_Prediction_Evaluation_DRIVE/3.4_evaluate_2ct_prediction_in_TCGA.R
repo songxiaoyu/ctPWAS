@@ -1,6 +1,6 @@
 # rm(list=ls())
 library(data.table)
-library(ctOWAS)
+library(ctPWAS)
 library(doMC)
 library(tidyverse)
 library(janitor)
@@ -169,7 +169,7 @@ for (g in  seq_along(gene)){
   if (mean(is.na(y))>0.5) {next}
   pi <- pi2$Epithelial[match(SampleID, pi2$sample)]
 
-  # ctOWAS
+  # ctPWAS
   w_s <- filtered_weights_s[filtered_weights_s$gene == yName, ]
   i_s <- filtered_intercept_s[filtered_intercept_s$gene == yName, ]
   if (nrow(i_s) == 0) { i_s <- tibble::tibble(gene = NA_character_, Cell1 = 0,Cell2 = 0)}
@@ -210,10 +210,10 @@ for (g in  seq_along(gene)){
 
 }
 
-colnames(cor) <- c("ctOWAS","MiXcan (ctOWAS pi)",  "MiXcan (original pi)", "PrediXcan")
+colnames(cor) <- c("ctPWAS","MiXcan (ctPWAS pi)",  "MiXcan (original pi)", "PrediXcan")
 
 apply(cor, 2, median, na.rm=T)
-# ctOWAS   MiXcan (ctOWAS pi) MiXcan (original pi)            PrediXcan
+# ctPWAS   MiXcan (ctPWAS pi) MiXcan (original pi)            PrediXcan
 # 0.3037511            0.1351166            0.1367440            0.1115168
 apply(cor, 2, mean, na.rm=T)
 
@@ -223,7 +223,7 @@ save(cor,file = file.path(results_dir, "TCGA_Breast_pi2_Cor_Comparison.RData"))
 # --------------------------------------
 # -------------------- plot -------------------
 # -------------------------------------`-
-method_cols <- c( "PrediXcan"= "#B8B8B8", "MiXcan (original pi)" = "#4F7CAC", "MiXcan (ctOWAS pi)" = "#7FA6D6", "ctOWAS" = "#F0645E")
+method_cols <- c( "PrediXcan"= "#B8B8B8", "MiXcan (original pi)" = "#4F7CAC", "MiXcan (ctPWAS pi)" = "#7FA6D6", "ctPWAS" = "#F0645E")
 method_levels <- names(method_cols)
 
 ## ---------------- Model size ----------------
@@ -244,12 +244,12 @@ n_var_wide <-
   ) |>
   dplyr::full_join(
     count_var(filtered_weights_m_new) |>
-      dplyr::rename(`MiXcan (ctOWAS pi)` = n_varID),
+      dplyr::rename(`MiXcan (ctPWAS pi)` = n_varID),
     by = "gene"
   ) |>
   dplyr::full_join(
     count_var(filtered_weights_s) |>
-      dplyr::rename(ctOWAS = n_varID),
+      dplyr::rename(ctPWAS = n_varID),
     by = "gene"
   ) |>
   dplyr::mutate(

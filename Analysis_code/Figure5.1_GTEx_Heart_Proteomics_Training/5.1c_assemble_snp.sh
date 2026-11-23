@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-PAPER_DIR="${PAPER_ctOWAS_DIR:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS}"
+PAPER_DIR="${PAPER_ctPWAS_DIR:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS}"
 
 PRUNE_KB="${PWAS_PRUNE_KB:-500}"
 PRUNE_STEP="${PWAS_PRUNE_STEP:-1}"

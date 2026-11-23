@@ -5,13 +5,13 @@
 
 set -euo pipefail
 
-PAPER_DIR="${PAPER_ctOWAS_DIR:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS}"
+PAPER_DIR="${PAPER_ctPWAS_DIR:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS}"
 # 1000 Genomes phase 3 (hg38) reference panel, per-chromosome pgen/pvar/psam.
 # Lives entirely inside Paper_PWAS -- no other project's folder is needed.
 DATA_DIR="${PAPER_DIR}/Data/plink_snplist_by_gene"
-# Which trained model this run is for: "ctOWAS" or "MiXcan" (must match the
+# Which trained model this run is for: "ctPWAS" or "MiXcan" (must match the
 # HERMES_MODEL_TAG used in 7.2_HERMES_prepare_data_pwas.R).
-MODEL_TAG="${HERMES_MODEL_TAG:-ctOWAS}"
+MODEL_TAG="${HERMES_MODEL_TAG:-ctPWAS}"
 WORKSPACE_DIR="${PAPER_DIR}/Results/hermes_pwas/hermes_workspace_${MODEL_TAG}"
 GWAS_ID_DIR="${WORKSPACE_DIR}/hermes_filtered_id"
 EUR_SAMPLES="${PAPER_DIR}/Data/1000Genome/eur_ids.txt"

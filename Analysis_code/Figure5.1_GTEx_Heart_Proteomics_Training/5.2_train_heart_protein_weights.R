@@ -1,7 +1,7 @@
 # Train 2-component PWAS MiXcan models on GTEx heart proteomics -----------------
 #
 # Goal:
-#   Build protein prediction weights for a downstream PWAS/ctOWAS analysis.
+#   Build protein prediction weights for a downstream PWAS/ctPWAS analysis.
 #   Each protein is modeled separately using cis genotype predictors, covariates,
 #   and two cell-fraction components:
 #     1. Cardiomyocytes
@@ -32,7 +32,7 @@ library(dplyr)
 library(readr)
 library(stringr)
 library(tibble)
-library(ctOWAS)
+library(ctPWAS)
 library(MiXcan)
 library(foreach)
 library(doParallel)
@@ -59,7 +59,7 @@ protein_sample_cols <- names(protein)[-(1:5)]
 
 cov_data <- read_covariates(file.path(paper_dir, "IntermediateResults", "covariate_EA_with_age.txt")) %>%
   distinct(DonorID, .keep_all = TRUE)
-# GWS: Paper_ctOWAS/New generated files/codes/by_chr_nomiss -- unpruned dosage files w/o missingness.
+# GWS: Paper_ctPWAS/New generated files/codes/by_chr_nomiss -- unpruned dosage files w/o missingness.
 geno_raw_dir <- file.path(paper_dir, "IntermediateResults", "WGS", "WGS_pruned_by_chr_500kb_1_r2_0.8")
 
 sample_map <- data.frame(
@@ -275,23 +275,23 @@ process_protein <- function(j) {
 
 
   weights_s <- intercept_s <- weights_m <- intercept_m <- weights_p <- NULL
-  # ctOWAS
+  # ctPWAS
   fit_s <- tryCatch(
-    ctOWAS_train_K(y = y, x = x, pi_k = pi_k, cov = z, xNameMatrix = x_name_matrix,
+    ctPWAS_train_K(y = y, x = x, pi_k = pi_k, cov = z, xNameMatrix = x_name_matrix,
                     yName = gene_id, foldid = foldid),
     error = function(e) {
-      errors <<- c(errors, paste0("ctOWAS_train_K_failed: ", conditionMessage(e)))
+      errors <<- c(errors, paste0("ctPWAS_train_K_failed: ", conditionMessage(e)))
       NULL
     }
   )
 
   if (!is.null(fit_s)) {
     weights_s <- combine_weights(fit = fit_s, snp_annot=snp_annot, target=target,
-                                 cell_type_cols=cell_type_cols, model = "ctOWAS")
+                                 cell_type_cols=cell_type_cols, model = "ctPWAS")
     weight_cols <- paste0("weight_", make_clean_names(cell_type_cols))
     weights_s <- weights_s[rowSums(abs(weights_s[, weight_cols, drop = FALSE]) > 2e-16) > 0, ]
     if (nrow(weights_s)==0) {weights_s <- NULL} else {
-      intercept_s <- extract_intercepts(fit = fit_s, target, cell_type_cols, model = "ctOWAS")}
+      intercept_s <- extract_intercepts(fit = fit_s, target, cell_type_cols, model = "ctPWAS")}
   }
 
   # MiXcan
@@ -358,7 +358,7 @@ t1-t0
 #   .combine = c,
 #   .multicombine = TRUE,
 #   .errorhandling = "pass",
-#   .packages = c("dplyr", "data.table", "ctOWAS", "MiXcan"),
+#   .packages = c("dplyr", "data.table", "ctPWAS", "MiXcan"),
 #   .options.snow = snow_opts
 # ) %dopar% {
 #
@@ -401,24 +401,24 @@ t1-t0
 # Bind the per-protein result list, write it under the shared naming scheme, and
 # report where it went.
 
-weights_ctOWAS_GTEx_heart    <- lapply(res, `[[`, "weights_s")
-intercept_ctOWAS_GTEx_heart  <- lapply(res, `[[`, "intercept_s")
+weights_ctPWAS_GTEx_heart    <- lapply(res, `[[`, "weights_s")
+intercept_ctPWAS_GTEx_heart  <- lapply(res, `[[`, "intercept_s")
 weights_MiXcan_GTEx_heart     <- lapply(res, `[[`, "weights_m")
 intercept_MiXcan_GTEx_heart   <- lapply(res, `[[`, "intercept_m")
 weights_PrediXcan_GTEx_heart  <- lapply(res, `[[`, "weights_p")
 
 gene_names <- vapply(res, `[[`, character(1), "gene_id")
-names(weights_ctOWAS_GTEx_heart) <- names(intercept_ctOWAS_GTEx_heart) <-
+names(weights_ctPWAS_GTEx_heart) <- names(intercept_ctPWAS_GTEx_heart) <-
   names(weights_MiXcan_GTEx_heart) <- names(intercept_MiXcan_GTEx_heart) <-
   names(weights_PrediXcan_GTEx_heart) <- gene_names
 
-weights_ctOWAS_GTEx_heart   <- data.table::rbindlist(lapply(res, `[[`, "weights_s"), fill = TRUE)
-intercept_ctOWAS_GTEx_heart <- data.table::rbindlist(lapply(res, `[[`, "intercept_s"), fill = TRUE)
+weights_ctPWAS_GTEx_heart   <- data.table::rbindlist(lapply(res, `[[`, "weights_s"), fill = TRUE)
+intercept_ctPWAS_GTEx_heart <- data.table::rbindlist(lapply(res, `[[`, "intercept_s"), fill = TRUE)
 weights_MiXcan_GTEx_heart    <- data.table::rbindlist(lapply(res, `[[`, "weights_m"), fill = TRUE)
 intercept_MiXcan_GTEx_heart  <- data.table::rbindlist(lapply(res, `[[`, "intercept_m"), fill = TRUE)
 weights_PrediXcan_GTEx_heart <- data.table::rbindlist(lapply(res, `[[`, "weights_p"), fill = TRUE)
 
-save(weights_ctOWAS_GTEx_heart, intercept_ctOWAS_GTEx_heart,
+save(weights_ctPWAS_GTEx_heart, intercept_ctPWAS_GTEx_heart,
      weights_MiXcan_GTEx_heart, intercept_MiXcan_GTEx_heart,
      weights_PrediXcan_GTEx_heart, file = file.path(results_dir, "GTEx_heart_pi2_ThreeModel_Summary.RData"))
 

@@ -14,7 +14,7 @@ library(tibble)
 library(foreach)
 library(doParallel)
 library(dplyr)
-library(ctOWAS)
+library(ctPWAS)
 
 
 paper_dir <- "/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS"
@@ -37,7 +37,7 @@ doParallel::registerDoParallel(cl)
 # AC244021.1: ENSG00000227082.1; j=3031
 # SRGAP2C: ENSG00000171943.11; j=3030
 res <- foreach(j = seq_len(G), .packages = c("glmnet", "data.table"),
-  .export = c("ctOWAS_train_K", "MiXcan"),.errorhandling = "pass") %dopar% {
+  .export = c("ctPWAS_train_K", "MiXcan"),.errorhandling = "pass") %dopar% {
 
   # Current gene and its SNP annotation in the elastic-net reference model.
   yName=genID[j]
@@ -77,15 +77,15 @@ res <- foreach(j = seq_len(G), .packages = c("glmnet", "data.table"),
   foldid= sample(rep(1:10, length.out =  length(y.complete)))
 
   #  y = y.complete;x = x.complete;pi_k = pi1.complete;cov = z.complete; xNameMatrix = xName.all[xvar0,]; alpha=0.5;
-  # ctOWAS
+  # ctPWAS
   ft_s1 <- tryCatch({
-    ft_s  <- ctOWAS_train_K(y = y.complete,x = x.complete,
+    ft_s  <- ctPWAS_train_K(y = y.complete,x = x.complete,
                             pi_k = pi1.complete, cov = z.complete,foldid=foldid,
                             xNameMatrix = xName.all[xvar0,], yName=yName)
 
     w <- cbind(ft_s$xNameMatrix, ft_s$W)
     if (!is.null(w) && nrow(w)>0) {weights_s <- w; intercept_s = ft_s$intercept}
-  }, error = function(e) {warning("ctOWAS_train_K failed: ", conditionMessage(e))
+  }, error = function(e) {warning("ctPWAS_train_K failed: ", conditionMessage(e))
     NULL
   })
 
@@ -192,7 +192,7 @@ save(
 
 sapply(
   list(
-    ctOWAS = filtered_weights_s,
+    ctPWAS = filtered_weights_s,
     MiXcan_new = filtered_weights_m_new,
     MiXcan_old = filtered_weights_m_old,
     PrediXcan = filtered_weights_p

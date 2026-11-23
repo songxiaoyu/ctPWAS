@@ -1,17 +1,17 @@
-# Run ctOWAS association for HERMES DCM using PWAS heart-protein weights.
+# Run ctPWAS association for HERMES DCM using PWAS heart-protein weights.
 # HERMES DCM is treated as a binary trait by default.
 # Provided counts:
 #   cases    = 14256
 #   controls = 1199156
 
 library(data.table)
-library(ctOWAS)
+library(ctPWAS)
 
 paper_dir <- "/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS"
 
-# Which trained model this run is for: "ctOWAS" or "MiXcan" (must match the
+# Which trained model this run is for: "ctPWAS" or "MiXcan" (must match the
 # HERMES_MODEL_TAG used in 7.2_HERMES_prepare_data_pwas.R and 7.3).
-model_tag <- Sys.getenv("HERMES_MODEL_TAG", "ctOWAS")
+model_tag <- Sys.getenv("HERMES_MODEL_TAG", "ctPWAS")
 workspace_dir <- file.path(
   paper_dir,
   "Results", "hermes_pwas",
@@ -49,13 +49,13 @@ run_gene <- function(gene_id, selected, X_ref, chr) {
   gwas_results <- list(Beta = selected$beta.Gwas,se_Beta = selected$SE.Gwas)
 
   gwas_z_score <- selected$beta.Gwas / selected$SE.Gwas
-  fit <- ctOWAS_assoc_test_K(
+  fit <- ctPWAS_assoc_test_K(
     W = W, gwas_z_score = gwas_z_score, x_g = X_ref_filtered,
     n0 = n0, n1 = n1, family = family,
     regularization = "fixed", reg_scale = assoc_reg_scale
   )
 
-  pre_reg_p_join <- ctOWAS:::safe_ACAT(fit$p_sep)
+  pre_reg_p_join <- ctPWAS:::safe_ACAT(fit$p_sep)
   scale_col <- "p_join_reg_scale_0p005"
 
   out <- data.frame(

@@ -6,7 +6,7 @@ library(foreach)
 library(doParallel)
 library(doRNG)
 library(glmnet)
-library(ctOWAS)
+library(ctPWAS)
 library(MiXcan)
 library(ggplot2)
 
@@ -117,23 +117,23 @@ run_one_replication <- function(replicate_id, scenario_index, scenario, X_pool, 
   set.seed(seed)
   foldid <- sample(rep(seq_len(10), length.out = n))
   # 1. Train prediction models on this dataset.
-  fit_ctowas <- ctOWAS::ctOWAS_train_K(y = sim$y_train, x = x_train, cov = NULL, pi_k = pi_k, xNameMatrix = x_name_matrix,
+  fit_ctPWAS <- ctPWAS::ctPWAS_train_K(y = sim$y_train, x = x_train, cov = NULL, pi_k = pi_k, xNameMatrix = x_name_matrix,
     yName = "simulation", foldid=foldid)
 
   fit_mixcan <- MiXcan::MiXcan(y = sim$y_train, x = x_train,
                                pi = pi_k[, "Cell1"], cov = NULL,
                                xNameMatrix = x_name_matrix, yName = "simulation", foldid = foldid)
 
-  ctowas_weights_all <- as.matrix(fit_ctowas$W)
+  ctPWAS_weights_all <- as.matrix(fit_ctPWAS$W)
   mixcan_weights_all <- cbind(Cell1 = as.numeric(unlist(fit_mixcan$beta.SNP.cell1$weight)), Cell2 = as.numeric(unlist(fit_mixcan$beta.SNP.cell2$weight)))
   predixcan_weights_all <- as.numeric(fit_mixcan$beta.all.models[seq_len(p) + 1L, "Tissue"])
 
-  keep_ctowas <- rowSums(abs(ctowas_weights_all), na.rm = TRUE) > 1e-12
+  keep_ctPWAS <- rowSums(abs(ctPWAS_weights_all), na.rm = TRUE) > 1e-12
   keep_mixcan <- rowSums(abs(mixcan_weights_all), na.rm = TRUE) > 1e-12
   keep_predixcan <- is.finite(predixcan_weights_all) & abs(predixcan_weights_all) > 1e-12
 
-  mean_causal_snp_ctowas <- mean(
-    abs(ctowas_weights_all[
+  mean_causal_snp_ctPWAS <- mean(
+    abs(ctPWAS_weights_all[
       cbind(
         c(sim$causal_snp_cell1, sim$causal_snp_cell2),
         c(1L, 2L)
@@ -176,17 +176,17 @@ run_one_replication <- function(replicate_id, scenario_index, scenario, X_pool, 
   }
 
 
-  pred_s <- x_test %*% ctowas_weights_all
+  pred_s <- x_test %*% ctPWAS_weights_all
   pred_m <- x_test %*% mixcan_weights_all
-  pred_tissue_s <- sim$pi_test * (fit_ctowas$intercept[1]+ pred_s[, 1L]) +
-            (1 - sim$pi_test) * (fit_ctowas$intercept[2]+pred_s[, 2L])
+  pred_tissue_s <- sim$pi_test * (fit_ctPWAS$intercept[1]+ pred_s[, 1L]) +
+            (1 - sim$pi_test) * (fit_ctPWAS$intercept[2]+pred_s[, 2L])
   pred_tissue_m <- sim$pi_test * (fit_mixcan$beta.all.models[1,2]+ pred_m[, 1L]) +
     (1 - sim$pi_test) * (fit_mixcan$beta.all.models[1,3]+ pred_m[, 2L])
   pred_p <- as.numeric(x_test %*% predixcan_weights_all)
 
-  cor_ct_ctowas <- c( safe_cor(pred_s[, 1L], sim$y1_test),safe_cor(pred_s[, 2L],  sim$y2_test))
+  cor_ct_ctPWAS <- c( safe_cor(pred_s[, 1L], sim$y1_test),safe_cor(pred_s[, 2L],  sim$y2_test))
   cor_ct_mixcan <- c(safe_cor(pred_m[, 1L], sim$y1_test),safe_cor(pred_m[, 2L],  sim$y2_test))
-  cor_tissue_ctowas <- safe_cor(pred_tissue_s, sim$y_test)
+  cor_tissue_ctPWAS <- safe_cor(pred_tissue_s, sim$y_test)
   cor_tissue_mixcan <- safe_cor(pred_tissue_m, sim$y_test)
   cor_predixcan <- safe_cor(pred_p, sim$y_test)
 
@@ -217,18 +217,18 @@ run_one_replication <- function(replicate_id, scenario_index, scenario, X_pool, 
   }
 
   p_s1 <- p_s2 <- p_s_joint <- NA_real_
-  if (any(keep_ctowas)) {
-    selected_snp <- which(keep_ctowas)
-    gwas <- ctOWAS::run_gwas(
+  if (any(keep_ctPWAS)) {
+    selected_snp <- which(keep_ctPWAS)
+    gwas <- ctPWAS::run_gwas(
       X = x_test[, selected_snp, drop = FALSE], D = outcome,
       family0 = stats::binomial(), method_binomial = "glm"
     )
     x_ld <- if (ld_reference == "test") x_test[, selected_snp, drop = FALSE] else x_train[, selected_snp, drop = FALSE]
-    W <- ctowas_weights_all[selected_snp, , drop = FALSE]
+    W <- ctPWAS_weights_all[selected_snp, , drop = FALSE]
     colnames(W) <- c("Cell1", "Cell2")
 
     fit_s_assoc <- tryCatch(
-      ctOWAS::ctOWAS_assoc_test_K(
+      ctPWAS::ctPWAS_assoc_test_K(
         W = W, gwas_z_score = gwas$Z, x_g = x_ld,
         n0 = sum(outcome == 0), n1 = sum(outcome == 1), family = "binomial",
         regularization = regularization, reg_scale = reg_scale,
@@ -250,15 +250,15 @@ run_one_replication <- function(replicate_id, scenario_index, scenario, X_pool, 
     scenario_id = scenario$scenario_id, scenario = scenario$scenario,
     eta1 = scenario$eta1, eta2 = scenario$eta2, replicate = replicate_id,
     causal_snp_cell1 = sim$causal_snp_cell1, causal_snp_cell2 = sim$causal_snp_cell2,
-    n_snp_ctowas = sum(keep_ctowas), n_snp_mixcan = sum(keep_mixcan), n_snp_predixcan = sum(keep_predixcan),
-    mean_causal_snp_ctowas=mean_causal_snp_ctowas,
+    n_snp_ctPWAS = sum(keep_ctPWAS), n_snp_mixcan = sum(keep_mixcan), n_snp_predixcan = sum(keep_predixcan),
+    mean_causal_snp_ctPWAS=mean_causal_snp_ctPWAS,
     mean_causal_snp_mixcan = mean_causal_snp_mixcan,
     mean_causal_snp_predixcan = mean_causal_snp_predixcan,
-    cor_tissue_ctowas = cor_tissue_ctowas,
+    cor_tissue_ctPWAS = cor_tissue_ctPWAS,
     cor_tissue_mixcan = cor_tissue_mixcan,
     cor_predixcan = cor_predixcan,
-    cor_ctowas_cell1 = cor_ct_ctowas[1L],
-    cor_ctowas_cell2 = cor_ct_ctowas[2L],
+    cor_ctPWAS_cell1 = cor_ct_ctPWAS[1L],
+    cor_ctPWAS_cell2 = cor_ct_ctPWAS[2L],
     cor_mixcan_cell1 = cor_ct_mixcan[1L],
     cor_mixcan_cell2 = cor_ct_mixcan[2L],
     p_s_join_1 = p_s1, p_s_join_2 = p_s2, p_s_join = p_s_joint,

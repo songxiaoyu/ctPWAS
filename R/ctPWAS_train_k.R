@@ -1,4 +1,4 @@
-#' Train a K-cell-type ctOWAS prediction model
+#' Train a K-cell-type ctPWAS prediction model
 #'
 #' @description
 #' Trains a cell-type-specific molecular prediction model for one gene or
@@ -103,7 +103,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' fit <- ctOWAS_train_K(
+#' fit <- ctPWAS_train_K(
 #'   y           = expr_gene,        # length N
 #'   x           = geno,             # N x P dosages
 #'   cov         = covariates,       # N x Q, or NULL
@@ -119,7 +119,7 @@
 #' @importFrom glmnet cv.glmnet glmnet
 #' @export
 
-ctOWAS_train_K <- function(y, x, cov = NULL, pi_k,xNameMatrix = NULL, yName = NULL,
+ctPWAS_train_K <- function(y, x, cov = NULL, pi_k,xNameMatrix = NULL, yName = NULL,
                             foldid = NULL,  No_split=11, alpha=0.5, seed=NULL) {
 
   ## ---- Input checks and setup ----

@@ -1,6 +1,6 @@
 rm(list = ls())
 library(dplyr)
-library(ctOWAS)
+library(ctPWAS)
 library(MiXcan)
 library(purrr)
 library(data.table)
@@ -12,26 +12,26 @@ drive_geno_dir <- file.path(paper_dir, '../Paper_MiXcan/Data/OncoArray')
 cache_dir <- file.path(results_dir, 'DRIVE_cached_inputs')
 dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
 
-run_preparation <- FALSE       # FALSE for subsequent ctOWAS-only runs
-run_ctowas <- TRUE
+run_preparation <- FALSE       # FALSE for subsequent ctPWAS-only runs
+run_ctPWAS <- TRUE
 chromosomes <- 1:22
 mc_cores <- 1L                # macOS/Linux; use 1 on Windows
-ctowas_tag <- 'default'       # Change to preserve results from different runs
-ctowas_reg_scale <- 0.01      # NULL uses the package default
-mixcan_reg_scale <- 0.01      # ctOWAS with MiXcan weights
+ctPWAS_tag <- 'default'       # Change to preserve results from different runs
+ctPWAS_reg_scale <- 0.01      # NULL uses the package default
+mixcan_reg_scale <- 0.01      # ctPWAS with MiXcan weights
 
 # Preparation-only setup ---------------------------------------------
 if (run_preparation) {
   load(file.path(results_dir, 'GTEx_Breast_pi2_ThreeModel_Summary.RData'))
   merge_keys <- c('gene', 'rsid', 'varID', 'ref_allele', 'eff_allele')
   mw_input <- list(
-    filtered_weights_s %>% rename(ctOWAS_Cell1 = Cell1, ctOWAS_Cell2 = Cell2),
+    filtered_weights_s %>% rename(ctPWAS_Cell1 = Cell1, ctPWAS_Cell2 = Cell2),
     filtered_weights_m_new %>% rename(MiXcan_Cell1 = Cell1, MiXcan_Cell2 = Cell2),
     filtered_weights_p %>% rename(PrediXcan_tissue = tissue)
   ) %>%
     purrr::reduce(dplyr::full_join, by = merge_keys) %>%
     mutate(
-      across(c(ctOWAS_Cell1, ctOWAS_Cell2, MiXcan_Cell1, MiXcan_Cell2,
+      across(c(ctPWAS_Cell1, ctPWAS_Cell2, MiXcan_Cell1, MiXcan_Cell2,
                PrediXcan_tissue), ~ coalesce(.x, 0)),
       CHR = as.integer(sub('^chr([0-9]+)_.*$', '\\1', varID)),
       POS = as.integer(sub('^chr[0-9]+_([0-9]+)_.*$', '\\1', varID)),
@@ -39,7 +39,7 @@ if (run_preparation) {
       eff_allele = toupper(eff_allele)
     ) %>%
     select(gene, rsid, varID, CHR, POS, ref_allele, eff_allele,
-           ctOWAS_Cell1, ctOWAS_Cell2, MiXcan_Cell1, MiXcan_Cell2,
+           ctPWAS_Cell1, ctPWAS_Cell2, MiXcan_Cell1, MiXcan_Cell2,
            PrediXcan_tissue) %>% arrange(CHR, POS, gene)
   setDT(mw_input)
 
@@ -182,10 +182,10 @@ run_chr <- function(chr) {
   drive_result
 }
 
-# Separate ctOWAS analysis -------------------------------------------
-run_ctowas_chr <- function(chr, tag = 'default', reg_scale = NULL,
+# Separate ctPWAS analysis -------------------------------------------
+run_ctPWAS_chr <- function(chr, tag = 'default', reg_scale = NULL,
                            mixcan_reg_scale = 0.01) {
-  message('\nRunning ctOWAS: chromosome ', chr)
+  message('\nRunning ctPWAS: chromosome ', chr)
   cached <- readRDS(file.path(cache_dir, sprintf('DRIVE_input_chr%02d.rds', chr)))
   input <- as.data.frame(cached$input)
   SampleID <- cached$SampleID
@@ -204,27 +204,27 @@ run_ctowas_chr <- function(chr, tag = 'default', reg_scale = NULL,
     args <- list(gwas_z_score = gene_df$Z, x_g = new_x,
                  n0 = cached$n0, n1 = cached$n1, family = 'binomial')
 
-    # ctOWAS with its own prediction weights
-    W <- as.matrix(gene_df[, c('ctOWAS_Cell1', 'ctOWAS_Cell2'), drop = FALSE])
+    # ctPWAS with its own prediction weights
+    W <- as.matrix(gene_df[, c('ctPWAS_Cell1', 'ctPWAS_Cell2'), drop = FALSE])
     if (any(W != 0)) {
       own_args <- c(list(W = W), args)
       if (!is.null(reg_scale)) own_args$reg_scale <- reg_scale
-      fit <- do.call(ctOWAS_assoc_test_K, own_args)
+      fit <- do.call(ctPWAS_assoc_test_K, own_args)
       drive_result[g, c('z_o_1', 'z_o_2', 'p_o_1', 'p_o_2', 'p_o')] <-
         c(fit$Z_join, fit$p_join_vec, fit$p_join)
     }
-    # ctOWAS with MiXcan prediction weights
+    # ctPWAS with MiXcan prediction weights
     W <- as.matrix(gene_df[, c('MiXcan_Cell1', 'MiXcan_Cell2'), drop = FALSE])
     if (any(W != 0)) {
       mix_args <- c(list(W = W), args)
       mix_args$reg_scale <- mixcan_reg_scale
-      fit <- do.call(ctOWAS_assoc_test_K, mix_args)
+      fit <- do.call(ctPWAS_assoc_test_K, mix_args)
       drive_result[g, c('p_s_1', 'p_s_2', 'p_s')] <-
         c(fit$p_join_vec, fit$p_join)
     }
   }
   fwrite(drive_result, file.path(
-    results_dir, sprintf('DRIVE_ctOWAS_%s_chr%02d.csv', tag, chr)
+    results_dir, sprintf('DRIVE_ctPWAS_%s_chr%02d.csv', tag, chr)
   ))
 
   # Also produce the original combined column layout, when available.
@@ -251,18 +251,18 @@ run_chromosomes <- function(FUN, ...) {
 }
 
 if (run_preparation) res_other <- run_chromosomes(run_chr)
-if (run_ctowas) {
-  res_ctowas <- run_chromosomes(
-    run_ctowas_chr, tag = ctowas_tag,
-    reg_scale = ctowas_reg_scale, mixcan_reg_scale = mixcan_reg_scale
+if (run_ctPWAS) {
+  res_ctPWAS <- run_chromosomes(
+    run_ctPWAS_chr, tag = ctPWAS_tag,
+    reg_scale = ctPWAS_reg_scale, mixcan_reg_scale = mixcan_reg_scale
   )
 }
 
 # Subsequent runs: set run_preparation <- FALSE near the top, and change
-# ctowas_tag, ctowas_reg_scale, and/or mixcan_reg_scale as desired.
+# ctPWAS_tag, ctPWAS_reg_scale, and/or mixcan_reg_scale as desired.
 # Alternatively, rerun just this call in the current R session:
-# res_ctowas_005 <- run_chromosomes(
-#   run_ctowas_chr, tag = 'reg005', reg_scale = 0.05, mixcan_reg_scale = 0.05
+# res_ctPWAS_005 <- run_chromosomes(
+#   run_ctPWAS_chr, tag = 'reg005', reg_scale = 0.05, mixcan_reg_scale = 0.05
 # )
 
 
@@ -270,8 +270,8 @@ if (run_ctowas) {
 
 library(data.table)
 
-# Match the tag used in run_ctowas_chr()
-ctowas_tag <- "default"
+# Match the tag used in run_ctPWAS_chr()
+ctPWAS_tag <- "default"
 chromosomes <- 1:22
 
 # Read and combine chromosome-specific results
@@ -295,21 +295,21 @@ combine_chr <- function(pattern) {
 # MiXcan and PrediXcan
 results_other <- combine_chr("DRIVE_other_models_chr%02d.csv")
 
-# ctOWAS and ctOWAS with MiXcan weights
-results_ctowas <- combine_chr(
-  paste0("DRIVE_ctOWAS_", ctowas_tag, "_chr%02d.csv")
+# ctPWAS and ctPWAS with MiXcan weights
+results_ctPWAS <- combine_chr(
+  paste0("DRIVE_ctPWAS_", ctPWAS_tag, "_chr%02d.csv")
 )
 
 # Check uniqueness before merging
 keys <- c("CHR", "Gene_ID")
 
 # Combine all models
-results_all <- merge(results_ctowas,results_other,by = keys, all = TRUE)
+results_all <- merge(results_ctPWAS,results_other,by = keys, all = TRUE)
 
 setorder(results_all, CHR, Gene_ID)
 
 # Save combined results
-fwrite(results_all,  file.path(results_dir, paste0("DRIVE_all_models_", ctowas_tag, "_all_chr.csv")))
+fwrite(results_all,  file.path(results_dir, paste0("DRIVE_all_models_", ctPWAS_tag, "_all_chr.csv")))
 
 dim(results_all)
 head(results_all)

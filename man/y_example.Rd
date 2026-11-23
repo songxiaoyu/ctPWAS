@@ -17,6 +17,6 @@ y_example
 \description{
 A simulated molecular trait (e.g. expression of one gene) for the 20
 samples in \code{\link{x_example}}, for use as \code{y} in
-\code{\link{ctOWAS_train_K}}.
+\code{\link{ctPWAS_train_K}}.
 }
 \keyword{datasets}

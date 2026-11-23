@@ -412,12 +412,12 @@ read_genotype_for_target <- function(target_id, chr, start, end, window_bp = 1e6
   list(raw_file = geno_chr$raw_file, x = x, snp_annot = snp_annot)
 }
 
-# Turn MiXcan and ctOWAS training model outputs into the flat weight table expected by downstream
+# Turn MiXcan and ctPWAS training model outputs into the flat weight table expected by downstream
 # PWAS/GWAS preparation code.
 combine_weights <- function(fit, snp_annot, target, cell_type_cols,
-                            model=c("ctOWAS", "MiXcan", "PrediXcan")) {
+                            model=c("ctPWAS", "MiXcan", "PrediXcan")) {
 
-  if (model==("ctOWAS")) {
+  if (model==("ctPWAS")) {
     weights <- as.data.frame(fit$W)
     weight_cols <- paste0("weight_", make_clean_names(cell_type_cols))
     colnames(weights) <- weight_cols
@@ -452,9 +452,9 @@ combine_weights <- function(fit, snp_annot, target, cell_type_cols,
 
 
 
-extract_intercepts <- function(fit, target, cell_type_cols, model=c("ctOWAS", "MiXcan")) {
+extract_intercepts <- function(fit, target, cell_type_cols, model=c("ctPWAS", "MiXcan")) {
 
-  if (model=="ctOWAS") {
+  if (model=="ctPWAS") {
     intercept_row <- fit$beta.all.models[1, , drop = FALSE]
   }
   if (model=="MiXcan"){

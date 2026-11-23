@@ -25,7 +25,7 @@ base_font <- 12
 # 1. Load data and calculate statistics
 # ==============================================================================
 dat2 <- read.csv(file.path(results_dir, "DRIVE_all_models_default_all_chr.csv"))
-dat3 <- read.csv(file.path(results_dir, "DRIVE_ctOWAS_3ct_default_all_chr.csv"))
+dat3 <- read.csv(file.path(results_dir, "DRIVE_ctPWAS_3ct_default_all_chr.csv"))
 
 
 

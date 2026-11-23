@@ -1,4 +1,4 @@
-# Prepare HERMES DCM GWAS for PWAS/ctOWAS analysis.
+# Prepare HERMES DCM GWAS for PWAS/ctPWAS analysis.
 #
 # Inputs:
 #   1. Heart protein weights from Analysis_code/Heart_Protein_Weights/2_train_heart_protein_weights.R
@@ -6,7 +6,7 @@
 #
 # Output:
 #   1. Per-chromosome SNP ID lists for 1000Genome LD extraction
-#   2. Per-chromosome merged weight + GWAS RDS files for ctOWAS
+#   2. Per-chromosome merged weight + GWAS RDS files for ctPWAS
 
 library(data.table)
 library(dplyr)
@@ -14,7 +14,7 @@ library(readr)
 
 setwd('/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS')
 paper_dir <- getwd()
-model_tag <- Sys.getenv("HERMES_MODEL_TAG", "ctOWAS") # can be "ctOWAS" or "MiXcan"
+model_tag <- Sys.getenv("HERMES_MODEL_TAG", "ctPWAS") # can be "ctPWAS" or "MiXcan"
 
 workspace_dir <- file.path(paper_dir, "Results", "hermes_pwas",paste0("hermes_workspace_", model_tag))
 

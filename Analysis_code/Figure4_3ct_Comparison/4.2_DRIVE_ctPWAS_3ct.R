@@ -1,6 +1,6 @@
 rm(list = ls())
 library(dplyr)
-library(ctOWAS)
+library(ctPWAS)
 library(data.table)
 
 paper_dir <- '/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS'
@@ -11,12 +11,12 @@ cache_dir <- file.path(results_dir, 'DRIVE_3ct_cached_inputs')
 dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
 
-run_preparation <- F       # FALSE for subsequent ctOWAS-only runs
-run_ctowas <- TRUE
+run_preparation <- F       # FALSE for subsequent ctPWAS-only runs
+run_ctPWAS <- TRUE
 chromosomes <- 22:1
 mc_cores <- 1L                # macOS/Linux; use 1 on Windows
-ctowas_tag <- 'default'       # Change to preserve results from different runs
-ctowas_reg_scale <- 0.01      # NULL uses the package default
+ctPWAS_tag <- 'default'       # Change to preserve results from different runs
+ctPWAS_reg_scale <- 0.01      # NULL uses the package default
 
 # Preparation-only setup ---------------------------------------------
 if (run_preparation) {
@@ -141,16 +141,16 @@ run_chr <- function(chr) {
   saveRDS(list(
     input = drive_input_total, SampleID = SampleID,
     n0 = sum(D == 0), n1 = sum(D == 1)
-  ), file.path(cache_dir, sprintf('DRIVE_ctOWAS_3ct_input_chr%02d.rds', chr)),
+  ), file.path(cache_dir, sprintf('DRIVE_ctPWAS_3ct_input_chr%02d.rds', chr)),
   compress = FALSE)
 
   invisible(chr)
 }
 
-# Separate ctOWAS analysis -------------------------------------------
-run_ctowas_chr <- function(chr, tag = 'default', reg_scale = NULL) {
-  message('\nRunning ctOWAS: chromosome ', chr)
-  cached <- readRDS(file.path(cache_dir, sprintf('DRIVE_ctOWAS_3ct_input_chr%02d.rds', chr)))
+# Separate ctPWAS analysis -------------------------------------------
+run_ctPWAS_chr <- function(chr, tag = 'default', reg_scale = NULL) {
+  message('\nRunning ctPWAS: chromosome ', chr)
+  cached <- readRDS(file.path(cache_dir, sprintf('DRIVE_ctPWAS_3ct_input_chr%02d.rds', chr)))
   input <- as.data.frame(cached$input)
   SampleID <- cached$SampleID
   drive_split_df <- split(input, input$gene)
@@ -167,19 +167,19 @@ run_ctowas_chr <- function(chr, tag = 'default', reg_scale = NULL) {
     args <- list(gwas_z_score = gene_df$Z, x_g = new_x,
                  n0 = cached$n0, n1 = cached$n1, family = 'binomial')
 
-    # ctOWAS with its own prediction weights
+    # ctPWAS with its own prediction weights
     W <- as.matrix(gene_df[, c('Cell1', 'Cell2', 'Cell3'), drop = FALSE])
     if (any(W != 0)) {
       own_args <- c(list(W = W), args)
       if (!is.null(reg_scale)) own_args$reg_scale <- reg_scale
-      fit <- do.call(ctOWAS_assoc_test_K, own_args)
+      fit <- do.call(ctPWAS_assoc_test_K, own_args)
       drive_result[g, c('z_1', 'z_2', 'z_3', 'p_1', 'p_2', 'p_3', 'p_joint')] <-
         c(fit$Z_join, fit$p_join_vec, fit$p_join)
     }
 
   }
   fwrite(drive_result, file.path(
-    results_dir, sprintf('DRIVE_ctOWAS_3ct_%s_chr%02d.csv', tag, chr)
+    results_dir, sprintf('DRIVE_ctPWAS_3ct_%s_chr%02d.csv', tag, chr)
   ))
 
   drive_result
@@ -198,17 +198,17 @@ run_chromosomes <- function(FUN, ...) {
 }
 
 if (run_preparation) res_input <- run_chromosomes(run_chr)
-if (run_ctowas) {
-  res_ctowas <- run_chromosomes(
-    run_ctowas_chr, tag = ctowas_tag,
-    reg_scale = ctowas_reg_scale
+if (run_ctPWAS) {
+  res_ctPWAS <- run_chromosomes(
+    run_ctPWAS_chr, tag = ctPWAS_tag,
+    reg_scale = ctPWAS_reg_scale
   )
 }
 
 # Merge all chromosome results; require every requested chromosome.
-combine_ctowas_results <- function(tag = 'default', chr = chromosomes) {
+combine_ctPWAS_results <- function(tag = 'default', chr = chromosomes) {
   files <- file.path(results_dir,
-    sprintf('DRIVE_ctOWAS_3ct_%s_chr%02d.csv', tag, chr))
+    sprintf('DRIVE_ctPWAS_3ct_%s_chr%02d.csv', tag, chr))
   if (any(!file.exists(files))) {
     stop('Missing chromosome files:\n',
          paste(files[!file.exists(files)], collapse = '\n'))
@@ -222,27 +222,27 @@ combine_ctowas_results <- function(tag = 'default', chr = chromosomes) {
                        'p_1', 'p_2', 'p_3', 'p_joint'))
   setorder(result, CHR, Gene_ID)
   fwrite(result, file.path(results_dir,
-    sprintf('DRIVE_ctOWAS_3ct_%s_all_chr.csv', tag)))
+    sprintf('DRIVE_ctPWAS_3ct_%s_all_chr.csv', tag)))
   result
 }
 
-if (run_ctowas) {
-  drive_result_all <- combine_ctowas_results(ctowas_tag)
+if (run_ctPWAS) {
+  drive_result_all <- combine_ctPWAS_results(ctPWAS_tag)
   if (interactive()) View(drive_result_all)
 }
 
 
 
-# ------ Harvest three-cell-type ctOWAS results -----------------------
+# ------ Harvest three-cell-type ctPWAS results -----------------------
 
 library(data.table)
 
-ctowas_tag <- "default"
+ctPWAS_tag <- "default"
 chromosomes <- 1:22
 
 files <- file.path(
   results_dir,
-  sprintf("DRIVE_ctOWAS_3ct_%s_chr%02d.csv", ctowas_tag, chromosomes)
+  sprintf("DRIVE_ctPWAS_3ct_%s_chr%02d.csv", ctPWAS_tag, chromosomes)
 )
 
 if (any(!file.exists(files))) {
@@ -275,7 +275,7 @@ fwrite(
   results_all_3ct,
   file.path(
     results_dir,
-    sprintf("DRIVE_ctOWAS_3ct_%s_all_chr.csv", ctowas_tag)
+    sprintf("DRIVE_ctPWAS_3ct_%s_all_chr.csv", ctPWAS_tag)
   )
 )
 

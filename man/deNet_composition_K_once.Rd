@@ -140,7 +140,7 @@ This function relies on the internal helpers \code{Estep.K()},
 }
 \examples{
 \dontrun{
-library(ctOWAS)
+library(ctPWAS)
 data(markers)
 data(expr)
 

@@ -3,7 +3,7 @@ library(foreach);
 library(doParallel);
 library(doRNG);
 library(glmnet);
-library(ctOWAS);
+library(ctPWAS);
 library(MiXcan)
 
 setwd("/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS")
@@ -38,7 +38,7 @@ doParallel::registerDoParallel(cl)
 
 results_list <- tryCatch(
   foreach(replicate_id = seq_len(n_replicates),
-          .packages = c("data.table", "glmnet", "ctOWAS", "MiXcan"),
+          .packages = c("data.table", "glmnet", "ctPWAS", "MiXcan"),
           .export = c("generate_one_dataset", "run_one_replication"),
           .options.RNG = 2026082, .errorhandling = "pass") %dorng% {
 

@@ -17,7 +17,7 @@ pi_k
 }
 \description{
 A simulated cell-type fraction matrix used in the README and examples,
-for use as \code{pi_k} in \code{\link{ctOWAS_train_K}}.
+for use as \code{pi_k} in \code{\link{ctPWAS_train_K}}.
 }
 \details{
 This dataset is artificially generated for demonstration purposes and is

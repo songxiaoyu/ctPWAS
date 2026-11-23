@@ -6,7 +6,7 @@ library(foreach)
 library(doParallel)
 library(doRNG)
 library(glmnet)
-library(ctOWAS)
+library(ctPWAS)
 library(MiXcan)
 library(ggplot2)
 
@@ -22,11 +22,11 @@ X_pool <- data.table::fread(file.path(paper_dir, "Data", "Simulation", "chr22_20
 
 # Simulation settings ---------------------------------------------------------
 
-n_replicates <- as.integer(Sys.getenv("ctOWAS_POWER_N_REPLICATES", unset = "1000"))
-workers <- as.integer(Sys.getenv("ctOWAS_POWER_WORKERS", unset = "5"))
-n_train <- as.integer(Sys.getenv("ctOWAS_POWER_N_TRAIN", unset = "300"))
-n_test <- as.integer(Sys.getenv("ctOWAS_POWER_N_TEST", unset = "3000"))
-reg_scale <- as.numeric(Sys.getenv("ctOWAS_POWER_REG_SCALE", unset = "0.05"))
+n_replicates <- as.integer(Sys.getenv("ctPWAS_POWER_N_REPLICATES", unset = "1000"))
+workers <- as.integer(Sys.getenv("ctPWAS_POWER_WORKERS", unset = "5"))
+n_train <- as.integer(Sys.getenv("ctPWAS_POWER_N_TRAIN", unset = "300"))
+n_test <- as.integer(Sys.getenv("ctPWAS_POWER_N_TEST", unset = "3000"))
+reg_scale <- as.numeric(Sys.getenv("ctPWAS_POWER_REG_SCALE", unset = "0.05"))
 
 b0 <- 1
 b1 <- 1
@@ -51,7 +51,7 @@ doParallel::registerDoParallel(cl)
 all_results <- tryCatch(
   foreach(
     scenario_index = seq_len(nrow(scenarios)),
-    .packages = c("data.table", "glmnet", "ctOWAS", "MiXcan"),
+    .packages = c("data.table", "glmnet", "ctPWAS", "MiXcan"),
     .export = c("generate_one_dataset", "run_one_replication"),
     .options.RNG = 2026081,
     .errorhandling = "stop"

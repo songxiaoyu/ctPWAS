@@ -10,13 +10,13 @@ in columns. Row names represent gene symbols, and column names
 represent sample identifiers.
 }
 \source{
-Example bulk gene expression data provided with the ctOWAS package.
+Example bulk gene expression data provided with the ctPWAS package.
 }
 \usage{
 expr
 }
 \description{
-A bulk gene expression dataset used in ctOWAS examples for
+A bulk gene expression dataset used in ctPWAS examples for
 estimating cell-type proportions using cell-type-specific marker genes.
 }
 \keyword{datasets}

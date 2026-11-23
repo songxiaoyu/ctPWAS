@@ -22,7 +22,7 @@
 set -euo pipefail
 
 PLINK="./plink2"
-# /Users/zhusinan/Library/CloudStorage/Dropbox/Paper_ctOWAS/New generated files/codes
+# /Users/zhusinan/Library/CloudStorage/Dropbox/Paper_ctPWAS/New generated files/codes
 VCF="$HOME/Documents/vcf/GTEx_Analysis_2021-02-11_v9_WholeGenomeSeq_953Indiv.vcf.gz"
 SAMPLES_PLINK="$HOME/Documents/vcf/GTEx_EA_samples.txt"
 SAMPLES_BCF="$HOME/Documents/vcf/GTEx_EA_samples_bcftools.txt"

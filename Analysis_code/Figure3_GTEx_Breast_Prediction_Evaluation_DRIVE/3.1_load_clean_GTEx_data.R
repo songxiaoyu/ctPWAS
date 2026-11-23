@@ -5,7 +5,7 @@ library(tidyverse)
 library(DBI)
 library(RSQLite)
 library(janitor)
-library(ctOWAS)
+library(ctPWAS)
 
 paper_dir <- "/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS"
 data_dir <- file.path(paper_dir, "Data")

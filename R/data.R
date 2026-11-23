@@ -1,6 +1,6 @@
 #' Cell-type-specific marker gene reference
 #'
-#' A total of 9 marker gene sets for 3 cell types used in ctOWAS
+#' A total of 9 marker gene sets for 3 cell types used in ctPWAS
 #' for estimating cell-type proportions from bulk gene expression data.
 #' Each cell type has multiple marker gene sets.
 #'
@@ -9,20 +9,20 @@
 #'   with names formatted as \code{CellType#customN}, where
 #'   \code{CellType} indicates the cell type and \code{N} identifies
 #'   the marker gene set.
-#' @source Cell-type-specific marker gene sets compiled for ctOWAS analysis.
+#' @source Cell-type-specific marker gene sets compiled for ctPWAS analysis.
 "markers"
 
 
 
 #' Example bulk gene expression data
 #'
-#' A bulk gene expression dataset used in ctOWAS examples for
+#' A bulk gene expression dataset used in ctPWAS examples for
 #' estimating cell-type proportions using cell-type-specific marker genes.
 #'
 #' @format A data frame with 24,919 genes in rows and 125 samples
 #'   in columns. Row names represent gene symbols, and column names
 #'   represent sample identifiers.
-#' @source Example bulk gene expression data provided with the ctOWAS package.
+#' @source Example bulk gene expression data provided with the ctPWAS package.
 "expr"
 
 
@@ -44,7 +44,7 @@
 #'
 #' A simulated molecular trait (e.g. expression of one gene) for the 20
 #' samples in \code{\link{x_example}}, for use as \code{y} in
-#' \code{\link{ctOWAS_train_K}}.
+#' \code{\link{ctPWAS_train_K}}.
 #'
 #' @format A named numeric vector of length 20 (names \code{Sample1}, \ldots,
 #'   \code{Sample20}).
@@ -58,7 +58,7 @@
 #'
 #' GWAS effect sizes and standard errors for the 10 SNPs in
 #' \code{\link{x_example}}. Use \code{Beta / se_Beta} as
-#' \code{gwas_z_score} in \code{\link{ctOWAS_assoc_test_K}}.
+#' \code{gwas_z_score} in \code{\link{ctPWAS_assoc_test_K}}.
 #'
 #' @format A list with two named numeric vectors of length 10 (names
 #'   \code{SNP1}, \ldots, \code{SNP10}):
@@ -76,7 +76,7 @@
 #' Example cell-type fraction matrix (2 cell types)
 #'
 #' A simulated cell-type fraction matrix used in the README and examples,
-#' for use as \code{pi_k} in \code{\link{ctOWAS_train_K}}.
+#' for use as \code{pi_k} in \code{\link{ctPWAS_train_K}}.
 #'
 #' @format A numeric matrix with 20 samples in rows (\code{Sample1}, \ldots,
 #'   \code{Sample20}) and 2 cell types in columns (\code{Cell1},

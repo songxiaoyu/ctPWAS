@@ -1,6 +1,7 @@
 # ==============================================================================
 # 0. Setup
 # ==============================================================================
+rm(list=ls())
 library(ggplot2)
 library(ggrepel)
 library(cowplot)
@@ -8,7 +9,7 @@ library(bacon)
 library(dplyr)
 library(tidyr)
 library(ggforce)
-library(ctOWAS)
+library(ctPWAS)
 
 
 paper_dir <- "/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS"
@@ -17,21 +18,21 @@ results_dir <- file.path(paper_dir, "Results")
 figure_dir<- file.path(paper_dir, "Figure")
 
 # for reproducible please change to:
-data_dir=results_dir=figure_dir='~path to uploaded files'
+# data_dir=results_dir=figure_dir='~path to uploaded files'
 #data_dir=results_dir=figure_dir='/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS/Manuscript/GB/Reproducibility'
 
 
 figure_dir <- file.path(paper_dir, "Figure")
 base_font <- 12
 
-method_cols <- c("PrediXcan" = "#B8B8B8", "MiXcan (original pi)" = "#4F7CAC", "MiXcan (ctOWAS pi)" = "#7FA6D6", "ctOWAS" = "#F0645E")
+method_cols <- c("PrediXcan" = "#B8B8B8", "MiXcan (original pi)" = "#4F7CAC", "MiXcan (ctPWAS pi)" = "#7FA6D6", "ctPWAS" = "#F0645E")
 method_levels <- names(method_cols)
 # ==============================================================================
 # 1. Panel A: Cell Type Composition
 # ==============================================================================
-load(file.path(results_dir, "GTEx_pi2_comparison.RData"))
-load(file.path(results_dir,  "GTEx_expr2.RData"))
-data(marker)
+load(file.path(results_dir, "GTEx_pi2_comparison.RData")) # "pi2_bayes"   "pi2_mixcan" "pi2_new"     "pi2_tca"
+load(file.path(results_dir,  "GTEx_expr2.RData")) # expr2
+load(file.path(results_dir, "markers.RData"))
 
 library(ggbreak)
 library(ggrepel)
@@ -56,7 +57,7 @@ stromal_markers <- unique(c(markers$Adipocyte, markers$Fibroblast))
 
 # Wide format: one row per method
 stats_df <- bind_rows(lapply(
-  list(MiXcan = pi2_mixcan, ctOWAS = pi2_new,
+  list(MiXcan = pi2_mixcan, ctPWAS = pi2_new,
        BayesDeBulk = pi2_bayes, TCA = pi2_tca),
   function(p) {
     p <- as.data.frame(p)
@@ -66,14 +67,14 @@ stats_df <- bind_rows(lapply(
     )
   }
 ), .id = "Method") |>
-  mutate(Method = factor(Method, c("MiXcan", "ctOWAS", "BayesDeBulk", "TCA")))
+  mutate(Method = factor(Method, c("MiXcan", "ctPWAS", "BayesDeBulk", "TCA")))
 
 print(stats_df)
 # # A tibble: 4 × 3
 # Method      mean_Epithelial           mean_Stromal
 # <fct>                   <dbl>          <dbl>
 #   1 MiXcan                  0.772          0.447
-# 2 ctOWAS                  0.808          0.507
+# 2 ctPWAS                  0.808          0.507
 # 3 BayesDeBulk             0.547          0.525
 # 4 TCA                     0.725          0.490
 # Scatter plot: one dot per method
@@ -103,15 +104,15 @@ count_var <- \(x) x |> dplyr::distinct(gene, varID) |> dplyr::count(gene, name =
 
 n_var_wide <- count_var(filtered_weights_p) |> dplyr::rename(PrediXcan = n_varID) |>
   dplyr::full_join(count_var(filtered_weights_m_old) |> dplyr::rename(`MiXcan (original pi)` = n_varID), by = "gene") |>
-  dplyr::full_join(count_var(filtered_weights_m_new) |> dplyr::rename(`MiXcan (ctOWAS pi)` = n_varID), by = "gene") |>
-  dplyr::full_join(count_var(filtered_weights_s) |> dplyr::rename(ctOWAS = n_varID), by = "gene") |>
+  dplyr::full_join(count_var(filtered_weights_m_new) |> dplyr::rename(`MiXcan (ctPWAS pi)` = n_varID), by = "gene") |>
+  dplyr::full_join(count_var(filtered_weights_s) |> dplyr::rename(ctPWAS = n_varID), by = "gene") |>
   dplyr::mutate(dplyr::across(-gene, \(x) tidyr::replace_na(x, 0L)))
 
 ## Number of fitted genes; mean and median model size among fitted genes
 sapply(n_var_wide[-1], \(x) sum(x > 0))
 sapply(n_var_wide[-1], \(x) mean(x[x > 0]))
 # sapply(n_var_wide[-1], \(x) median(x[x > 0]))
-# PrediXcan MiXcan (original pi)   MiXcan (ctOWAS pi)               ctOWAS
+# PrediXcan MiXcan (original pi)   MiXcan (ctPWAS pi)               ctPWAS
 # 8.761186             8.804644             9.202787             5.736042
 
 
@@ -133,7 +134,6 @@ p2
 
 load(file.path(results_dir, "TCGA_Breast_pi2_Cor_Comparison.RData"))
 
-
 cor_long <- tibble::as_tibble(cor, .name_repair = "check_unique") |>
   dplyr::mutate(row_id = dplyr::row_number()) |>
   tidyr::pivot_longer(-row_id, names_to = "Method", values_to = "Correlation") |>
@@ -152,8 +152,8 @@ stat
 # <fct>                   <dbl>
 #   1 PrediXcan               0.112
 # 2 MiXcan (original pi)    0.137
-# 3 MiXcan (ctOWAS pi)      0.135
-# 4 ctOWAS                  0.304
+# 3 MiXcan (ctPWAS pi)      0.135
+# 4 ctPWAS                  0.304
 
 p3 <- ggplot2::ggplot(modelled_genes, ggplot2::aes(Method, Correlation, fill = Method)) +
   ggplot2::geom_violin(width = 0.8, alpha = 0.5, trim = TRUE, na.rm = TRUE) +
@@ -167,39 +167,99 @@ p3
 
 
 # ==============================================================================
-# 4. Panel D: p-value comparison under the same prediction model
+# 4. Panel D:
+# ==============================================================================
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+
+# Load results
+load(file.path(results_dir, "snRNAseq_comparison_S_vs_M.RData"))
+dat <- dplyr::bind_rows(lapply(results, `[[`, "data"))
+stats <- dplyr::bind_rows(lapply(results, `[[`, "stats"))
+
+method_names <- c("M" = "MiXcan", "S" = "ctPWAS", "MiXcan" = "MiXcan", "ctPWAS" = "ctPWAS")
+comparisons <- c("White vs AA", "White vs Asian", "AA vs Asian")
+
+dat$Method <- factor(unname(method_names[as.character(dat$Method)]), levels = c("MiXcan", "ctPWAS"))
+stats$Method <- factor(unname(method_names[as.character(stats$Method)]), levels = c("MiXcan", "ctPWAS"))
+dat$Comparison <- factor(as.character(dat$Comparison), levels = comparisons)
+stats$Comparison <- factor(as.character(stats$Comparison), levels = comparisons)
+
+# Plotting function
+plot_comparison <- function(dat, stats, summary_type = "mean") {
+  summary_type <- match.arg(summary_type, c("mean", "median"))
+
+  mu <- dat %>%
+    dplyr::group_by(Method, Comparison, Group) %>%
+    dplyr::summarise(Mean = mean(Value, na.rm = TRUE), Median = median(Value, na.rm = TRUE), .groups = "drop") %>%
+    dplyr::mutate(summary_value = if (summary_type == "mean") Mean else Median,
+                  label = paste0(if (summary_type == "mean") "Mean = " else "Median = ", sprintf("%.3f", summary_value)),
+                  vjust_pos = ifelse(Group == "Predicted higher", 3, 4.5))
+
+  stats2 <- stats %>%
+    dplyr::mutate(p_label = paste0("Higher: p = ", formatC(P_higher, format = "e", digits = 2),
+                                   "\nLower: p = ", formatC(P_lower, format = "e", digits = 2)))
+
+  pic <- ggplot(dat, aes(x = Value, color = Group)) +
+    geom_density(linewidth = 0.8, na.rm = TRUE) +
+    geom_vline(data = mu, aes(xintercept = summary_value, color = Group), inherit.aes = FALSE, linetype = "dashed", linewidth = 0.7) +
+    geom_text(data = mu, aes(x = -Inf, y = Inf, label = label, color = Group, vjust = vjust_pos),
+              inherit.aes = FALSE, hjust = -0.05, size = 3.2, show.legend = FALSE) +
+    geom_text(data = stats2, aes(x = Inf, y = Inf, label = p_label),
+              inherit.aes = FALSE, hjust = 1.05, vjust = 1.3, size = 3) +
+    facet_grid(Method ~ Comparison ) +
+    scale_color_manual(values = c("Predicted higher" = "#0C7BDC", "Predicted lower" = "#FFC20A")) +
+    labs(x = "Observed difference in epithelial snRNA-seq", y = "Density", color = NULL) +
+    ggpubr::theme_pubr() +
+    theme(strip.text = element_text(size = 11, face = "bold"), legend.position = "bottom",
+          panel.spacing = grid::unit(0.8, "lines"))
+
+  return(pic)
+}
+
+# Plot mean
+p4 <- plot_comparison(dat, stats, summary_type = "mean")
+p4
+
+# ggsave(file.path(figure_dir, "snRNAseq_comparison_MiXcan_vs_ctPWAS.pdf"), plot = pic, width = 11, height = 9)
+
+# ==============================================================================
+# 4. Panel E: p-value comparison under the same prediction model
 # ==============================================================================
 drive <- read.csv(file.path(results_dir, "DRIVE_all_models_default_all_chr.csv"))
 
 plot_df <- drive |> dplyr::filter(is.finite(p_s), is.finite(p_m), p_s > 0, p_s <= 1, p_m > 0, p_m <= 1)
 r <- with(plot_df, cor(-log10(p_m), -log10(p_s)))
 
-p4=ggplot2::ggplot(plot_df, ggplot2::aes(x = -log10(p_m), y = -log10(p_s))) +
+p5=ggplot2::ggplot(plot_df, ggplot2::aes(x = -log10(p_m), y = -log10(p_s))) +
   ggplot2::geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey50") +
   ggplot2::geom_point(size = 1.5, alpha = 0.6, color = "#4C78A8") +
-  ggplot2::annotate("text", x = -Inf, y = Inf, label = sprintf("r = %.3f", r), hjust = -0.1, vjust = 1.2, size = 4) +
-  ggplot2::labs(x = expression(MiXcan~~-log[10](p)), y = expression(ctOWAS[0]~~-log[10](p)))+
+  ggplot2::annotate("text", x = -Inf, y = Inf, label = sprintf("r = %.2f", r), hjust = -0.1, vjust = 1.2, size = 4) +
+  ggplot2::labs(x = expression(MiXcan~~-log[10](p)), y = expression(ctPWAS[0]~~-log[10](p)))+
   ggplot2::coord_equal() +
   ggplot2::theme_classic(base_size = 14)
-p4
+p5
 # ==============================================================================
-# 5. Panel E: Cell Type comparison plots
+# 5. Panel F: Cell Type comparison plots
 # ==============================================================================
 
 # drive <- read.csv(file.path(results_dir, "DRIVE_all_models_default_all_chr.csv"))
 
 ensembl38 <- readr::read_csv(file.path(data_dir, "ensembl38.txt"), show_col_types = FALSE) %>%
   janitor::clean_names() %>%
-  transmute(gene_stable_id = sub("\\..*$", "", gene_stable_id), gene_name = trimws(gene_name)) %>%
-  filter(!is.na(gene_name), gene_name != "") %>%
-  group_by(gene_stable_id) %>%
-  summarise(gene_name = paste(sort(unique(gene_name)), collapse = "/"), .groups = "drop")
+  dplyr::transmute(gene_stable_id = sub("\\..*$", "", gene_stable_id), gene_name = trimws(gene_name)) %>%
+  dplyr::filter(!is.na(gene_name), gene_name != "") %>%
+  dplyr::group_by(gene_stable_id) %>%
+  dplyr::summarise(gene_name = paste(sort(unique(gene_name)), collapse = "/"), .groups = "drop")
 
-plot_data <- drive %>% mutate(
-  p_o_1 = pmax(p_o_1, 1e-300), p_o_2 = pmax(p_o_2, 1e-300),
-  fdr_o_1 = p.adjust(p_o_1, "BH"), fdr_o_2 = p.adjust(p_o_2, "BH")
-  ) %>% mutate(gene_stable_id = sub("\\..*$", "", Gene_ID)) %>%
-  left_join(ensembl38, by = "gene_stable_id")
+plot_data <- drive %>%
+  dplyr::mutate(
+    p_o_1 = pmax(p_o_1, 1e-300), p_o_2 = pmax(p_o_2, 1e-300),
+    fdr_o_1 = p.adjust(p_o_1, "BH"), fdr_o_2 = p.adjust(p_o_2, "BH"),
+    gene_stable_id = sub("\\..*$", "", Gene_ID)
+  ) %>%
+  dplyr::left_join(ensembl38, by = "gene_stable_id")
 
 
 
@@ -230,7 +290,7 @@ make_comparison_plot <- function(dat, prefix, title) {
 }
 
 plot_m <- make_comparison_plot(plot_data, "p_m", "MiXcan")
-plot_o <- make_comparison_plot(plot_data, "p_o", "ctOWAS")
+plot_o <- make_comparison_plot(plot_data, "p_o", "ctPWAS")
 
 
 # ==============================================================================
@@ -238,7 +298,8 @@ plot_o <- make_comparison_plot(plot_data, "p_o", "ctOWAS")
 # ==============================================================================
 
 row1 <- cowplot::plot_grid(p1, p2, p3, nrow = 1, rel_widths = c(0.4, 0.3, 0.3), labels = c("A", "B", "C"))
-row2 <- cowplot::plot_grid(p4, plot_m, plot_o, nrow = 1,  labels = c("D", "E"))
+row2_right <- cowplot::plot_grid(p5, plot_m, plot_o, nrow = 3,  labels = c("E", "F"))
+row2=cowplot::plot_grid(p4, row2_right, nrow = 1,  labels = c("D"))
 p_all=cowplot::plot_grid(row1, row2, ncol = 1, rel_heights = c(1, 1))
 #p_all
 ggsave(plot = p_all, filename =file.path(figure_dir, "Figure_Comparison_MiXcan.pdf"), width = 11, height = 6.5)

@@ -101,7 +101,7 @@ listed in \code{cell_types} must be present in \code{rownames(xCellScore)}.
 }
 \examples{
 \dontrun{
-library(ctOWAS)
+library(ctPWAS)
 data(markers)
 data(expr)
 

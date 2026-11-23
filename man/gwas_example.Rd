@@ -21,6 +21,6 @@ gwas_example
 \description{
 GWAS effect sizes and standard errors for the 10 SNPs in
 \code{\link{x_example}}. Use \code{Beta / se_Beta} as
-\code{gwas_z_score} in \code{\link{ctOWAS_assoc_test_K}}.
+\code{gwas_z_score} in \code{\link{ctPWAS_assoc_test_K}}.
 }
 \keyword{datasets}

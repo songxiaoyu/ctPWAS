@@ -20,8 +20,8 @@ import pandas as pd
 
 
 DEFAULT_PAPER_DIR = os.environ.get(
-    "PAPER_ctOWAS_DIR",
-    "/Users/zhusinan/Library/CloudStorage/Dropbox/Paper_ctOWAS",
+    "PAPER_ctPWAS_DIR",
+    "/Users/zhusinan/Library/CloudStorage/Dropbox/Paper_ctPWAS",
 )
 DEFAULT_INPUT_FILE = os.path.join(
     DEFAULT_PAPER_DIR,

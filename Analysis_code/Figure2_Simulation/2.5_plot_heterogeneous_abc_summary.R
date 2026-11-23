@@ -21,14 +21,14 @@ type1_result= fread(file.path(input_dir, "type1_fixed_setting_full_results.csv")
 full_result=rbind(type1_result,power_result )
 
 # Boxplot: number of selected SNPs --------------------------------------------
-method_colors <- c(PrediXcan = "#4C78A8", MiXcan = "#F2A541", ctOWAS = "#D62728")
-method_levels <- c("PrediXcan", "MiXcan", "ctOWAS")
+method_colors <- c(PrediXcan = "#4C78A8", MiXcan = "#F2A541", ctPWAS = "#D62728")
+method_levels <- c("PrediXcan", "MiXcan", "ctPWAS")
 
-snp_plot <- melt(full_result, measure.vars = c("n_snp_predixcan", "n_snp_mixcan","n_snp_ctowas"),
+snp_plot <- melt(full_result, measure.vars = c("n_snp_predixcan", "n_snp_mixcan","n_snp_ctPWAS"),
   variable.name = "Method", value.name = "Number_of_SNPs")
 
-snp_plot[, Method := factor( Method,levels = c("n_snp_predixcan", "n_snp_mixcan","n_snp_ctowas"),
-                             labels = c( "PrediXcan","MiXcan", "ctOWAS"))]
+snp_plot[, Method := factor( Method,levels = c("n_snp_predixcan", "n_snp_mixcan","n_snp_ctPWAS"),
+                             labels = c( "PrediXcan","MiXcan", "ctPWAS"))]
 
 
 snp_plot[, Method := factor(Method, levels = method_levels)]
@@ -54,14 +54,14 @@ snp_plot[, .(Mean_SNPs = mean(Number_of_SNPs, na.rm = TRUE)), by = Method]
 cor_plot <- rbindlist(list(
   full_result[, .(Method = "PrediXcan", Level = "Tissue", Correlation = cor_predixcan)],
   full_result[, .(Method = "MiXcan", Level = "Tissue", Correlation = cor_tissue_mixcan)],
-  full_result[, .(Method = "ctOWAS", Level = "Tissue", Correlation = cor_tissue_ctowas)],
+  full_result[, .(Method = "ctPWAS", Level = "Tissue", Correlation = cor_tissue_ctPWAS)],
   full_result[, .(Method = "MiXcan", Level = "Minor Cell Type", Correlation = cor_mixcan_cell1)],
   full_result[, .(Method = "MiXcan", Level = "Major Cell Type", Correlation = cor_mixcan_cell2)],
-  full_result[, .(Method = "ctOWAS", Level = "Minor Cell Type", Correlation = cor_ctowas_cell1)],
-  full_result[, .(Method = "ctOWAS", Level = "Major Cell Type", Correlation = cor_ctowas_cell2)]
+  full_result[, .(Method = "ctPWAS", Level = "Minor Cell Type", Correlation = cor_ctPWAS_cell1)],
+  full_result[, .(Method = "ctPWAS", Level = "Major Cell Type", Correlation = cor_ctPWAS_cell2)]
 ))
 
-method_levels <- c("PrediXcan", "MiXcan", "ctOWAS")
+method_levels <- c("PrediXcan", "MiXcan", "ctPWAS")
 cor_plot[, `:=`(Method = factor(Method, levels = method_levels),
                 Level = factor(Level, levels = c("Tissue", "Minor Cell Type", "Major Cell Type")))]
 
@@ -91,17 +91,17 @@ cor_plot[, .(Mean = mean(Correlation, na.rm = TRUE), Median = median(Correlation
 # Plot values -----------------------------------------------------------
 
 setDT(full_result)
-p_columns <- c(PrediXcan = "p_predixcan", MiXcan    = "p_m_join", ctOWAS    = "p_s_join",
-               MiXcan_1    = "p_m_join_1", ctOWAS_1    = "p_s_join_1",
-               MiXcan_2    = "p_m_join_2", ctOWAS_2    = "p_s_join_2")
+p_columns <- c(PrediXcan = "p_predixcan", MiXcan    = "p_m_join", ctPWAS    = "p_s_join",
+               MiXcan_1    = "p_m_join_1", ctPWAS_1    = "p_s_join_1",
+               MiXcan_2    = "p_m_join_2", ctPWAS_2    = "p_s_join_2")
 
-method_colors <- c(PrediXcan = "#4C78A8", MiXcan    = "#F2A541",ctOWAS    = "#D62728",
-  MiXcan_1  = "#F6C36A",ctOWAS_1  = "#E66B6B",MiXcan_2  = "#C98720",ctOWAS_2  = "#A71919")
+method_colors <- c(PrediXcan = "#4C78A8", MiXcan    = "#F2A541",ctPWAS    = "#D62728",
+  MiXcan_1  = "#F6C36A",ctPWAS_1  = "#E66B6B",MiXcan_2  = "#C98720",ctPWAS_2  = "#A71919")
 
 
 scenario_levels <- unique(full_result[order(scenario_id), as.character(scenario)])
 scenario_labels <- setNames(c(
-  'atop("No mQT-Disease", paste(eta[1], " = ", eta[2], " = 0"))',
+  'atop("No Protein-Disease", paste(eta[1], " = ", eta[2], " = 0"))',
   'atop("Homogeneous", paste(eta[1], " = ", eta[2], " = 0.2"))',
   'atop("Minor Cell Type", paste(eta[1], " = 0.2; ", eta[2], " = 0"))',
   'atop("Major Cell Type", paste(eta[1], " = 0; ", eta[2], " = 0.2"))',
@@ -120,7 +120,7 @@ plot_data <- melt(
   , Method := names(p_columns)[match(p_column, p_columns)]
 ][
   , Level := fcase(
-    Method %chin% c("PrediXcan", "MiXcan", "ctOWAS"), "Tissue Level",
+    Method %chin% c("PrediXcan", "MiXcan", "ctPWAS"), "Tissue Level",
     grepl("_1$", Method), "Minor Cell Type",
     grepl("_2$", Method), "Major Cell Type"
   )
@@ -146,7 +146,7 @@ plot_data[, `:=`(
 plot_data[, `:=`(
   Level = factor(Level, levels = c("Minor Cell Type", "Major Cell Type", "Tissue Level")),
   Method_label = factor(sub("_[12]$", "", as.character(Method)),
-                        levels = c("PrediXcan", "MiXcan", "ctOWAS"))
+                        levels = c("PrediXcan", "MiXcan", "ctPWAS"))
 )]
 
 p_power <- ggplot(

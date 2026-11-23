@@ -1,10 +1,10 @@
-# Train the 3 vs 2 cell-type ctOWAS model on GTEx breast tissue for comparison ---------------------------
+# Train the 3 vs 2 cell-type ctPWAS model on GTEx breast tissue for comparison ---------------------------
 
 # Package dependencies
 library(data.table)
 library(tidyverse)
 library(janitor)
-library(ctOWAS)
+library(ctPWAS)
 library(readr)
 library(dplyr)
 library(glmnet)
@@ -23,7 +23,7 @@ G=length(genID)
 # 3. Gene-by-gene model training
 # ------------------------------------------------------------------------------
 
-# Run the 3-cell-type ctOWAS training loop with a fixed CV seed per gene.
+# Run the 3-cell-type ctPWAS training loop with a fixed CV seed per gene.
 
 # parallel version
 n_cores <- max(1L, parallel::detectCores() - 1L)
@@ -33,7 +33,7 @@ doParallel::registerDoParallel(cl)
 # G=5
 
 res <- foreach(j = seq_len(G), .packages = c("glmnet", "data.table"),
-               .export = c("ctOWAS_train_K"),.errorhandling = "pass") %dopar% {
+               .export = c("ctPWAS_train_K"),.errorhandling = "pass") %dopar% {
 
                  # Current gene and its SNP annotation in the elastic-net reference model.
                  yName=genID[j]
@@ -81,25 +81,25 @@ res <- foreach(j = seq_len(G), .packages = c("glmnet", "data.table"),
                  foldid= sample(rep(1:10, length.out =  length(y.complete)))
 
                  # #  y = y.complete;x = x.complete;pi_k = pi3.complete;cov = z.complete;xNameMatrix = xName.all[xvar0,]; fdrcut=0.25;alpha=0.5; seed=NULL
-                 # # ctOWAS K=2
+                 # # ctPWAS K=2
                  # ft_s_2ct <- tryCatch({
-                 #   ft_s_2ct  <- ctOWAS_train_K(y = y.complete,x = x.complete,pi_k = pi2.complete,
+                 #   ft_s_2ct  <- ctPWAS_train_K(y = y.complete,x = x.complete,pi_k = pi2.complete,
                  #                            cov = z.complete, xNameMatrix = xName.all[xvar0,], yName=yName,
                  #                            L=10, pip_cutoff=0.1,shared_prior_weight=0.2,
                  #                            cov_prior_weight=1, hard_threshold=T, coverage=0.99)
                  #   w <- cbind(ft_s_2ct$xNameMatrix, ft_s_2ct$W)
                  #   if (!is.null(w) && nrow(w)>0) {weights_s_2ct <- w; intercept_s_2ct = ft_s_2ct$beta.all.models[1,]}
                  # }, error = function(e) {
-                 #   cat("ctOWAS_train_K has no predictor.")})
+                 #   cat("ctPWAS_train_K has no predictor.")})
 
-                 # ctOWAS K=3
+                 # ctPWAS K=3
                  ft_s_3ct1 <- tryCatch({
-                   ft_s_3ct  <- ctOWAS_train_K(y = y.complete,x = x.complete,pi_k = pi3.complete,
+                   ft_s_3ct  <- ctPWAS_train_K(y = y.complete,x = x.complete,pi_k = pi3.complete,
                                             cov = z.complete, xNameMatrix = xName.all[xvar0,], yName=yName, foldid = foldid)
                    w <- cbind(ft_s_3ct$xNameMatrix, ft_s_3ct$W)
                    if (!is.null(w) && nrow(w)>0) {weights_s_3ct <- w; intercept_s_3ct = ft_s_3ct$beta.all.models[1,]}
                  }, error = function(e) {
-                   cat("ctOWAS_train_K has no predictor.")})
+                   cat("ctPWAS_train_K has no predictor.")})
 
                  list(gene = yName, weights_s_3ct = weights_s_3ct, intercept_s_3ct = intercept_s_3ct)
                }

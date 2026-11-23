@@ -8,7 +8,7 @@ model_file <- file.path(training_dir, "GTEx_heart_pi2_ThreeModel_Summary.RData")
 loaded <- load(model_file)
 cat("Loaded objects from", model_file, ":\n  ", paste(loaded, collapse = ", "), "\n")
 
-required_objs <- c("weights_ctOWAS_GTEx_heart", "weights_MiXcan_GTEx_heart")
+required_objs <- c("weights_ctPWAS_GTEx_heart", "weights_MiXcan_GTEx_heart")
 missing_objs <- setdiff(required_objs, loaded)
 if (length(missing_objs)) {
   stop("Model file is missing expected objects: ", paste(missing_objs, collapse = ", "),
@@ -30,12 +30,12 @@ export_weights <- function(weights_obj, type_label, out_file) {
   cat("Wrote", nrow(dt), "rows (", uniqueN(dt$gene_id), "genes ) to", out_file, "\n")
 }
 
-export_weights(weights_ctOWAS_GTEx_heart, "ctOWAS",
-                file.path(training_dir, "weights_ctOWAS_for_hermes.csv"))
+export_weights(weights_ctPWAS_GTEx_heart, "ctPWAS",
+                file.path(training_dir, "weights_ctPWAS_for_hermes.csv"))
 export_weights(weights_MiXcan_GTEx_heart, "MiXcan",
                 file.path(training_dir, "weights_MiXcan_for_hermes.csv"))
 
 cat("\nDone. Next: run 7.2_HERMES_prepare_data_pwas.R twice, once with\n",
-    "  HERMES_MODEL_TAG=ctOWAS Rscript 7.2_HERMES_prepare_data_pwas.R\n",
+    "  HERMES_MODEL_TAG=ctPWAS Rscript 7.2_HERMES_prepare_data_pwas.R\n",
     "and once with\n",
     "  HERMES_MODEL_TAG=MiXcan Rscript 7.2_HERMES_prepare_data_pwas.R\n")

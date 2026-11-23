@@ -11,9 +11,9 @@ set -euo pipefail
 #
 # Examples:
 
-PLINK="${PLINK:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_ctOWAS/Heart/plink2/plink2}"
+PLINK="${PLINK:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_ctPWAS/Heart/plink2/plink2}"
 
-PAPER_DIR="${PAPER_ctOWAS_DIR:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS}"
+PAPER_DIR="${PAPER_ctPWAS_DIR:-/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS}"
 NOMISS_DIR="${PWAS_NOMISS_BY_CHR_DIR:-$PAPER_DIR/IntermediateResults/WGS/by_chr_nomiss}"
 
 PRUNE_KB="${PWAS_PRUNE_KB:-500}"

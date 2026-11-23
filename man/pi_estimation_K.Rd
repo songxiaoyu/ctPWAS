@@ -85,7 +85,7 @@ state as a side effect.
 \code{\link{deNet_composition_K_once}}
 
 \dontrun{
-library(ctOWAS)
+library(ctPWAS)
 data(markers)
 data(expr)
 

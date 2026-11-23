@@ -12,7 +12,7 @@ library(bacon)
 
 # local path to change for reproducible study in a different computer
 paper_dir <- "/Users/songxiaoyu152/NUS Dropbox/Xiaoyu Song/Density_Song/Paper_PWAS"
-model_tag <- Sys.getenv("HERMES_MODEL_TAG", "ctOWAS")
+model_tag <- Sys.getenv("HERMES_MODEL_TAG", "ctPWAS")
 workspace_dir <- file.path(paper_dir, "Results", "hermes_pwas", paste0("hermes_workspace_", model_tag))
 result_table <- file.path(workspace_dir, "hermes_result", "hermes_result_pwas.csv")
 figure_dir <- file.path(paper_dir, "Figure")

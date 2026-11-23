@@ -76,7 +76,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' library(ctOWAS)
+#' library(ctPWAS)
 #' data(markers)
 #' data(expr)
 #'
@@ -302,7 +302,7 @@ estimate_prior <- function(xCellScore, cell_types, mu, lower = 0.01, upper = 0.9
 #'
 #' @examples
 #' \dontrun{
-#' library(ctOWAS)
+#' library(ctPWAS)
 #' data(markers)
 #' data(expr)
 #'
@@ -632,7 +632,7 @@ deNet_composition_K_once <- function(expr, composition, marker_list,
 #' @seealso \code{\link{deNet_composition_K_once}}
 #'
 #' \dontrun{
-#' library(ctOWAS)
+#' library(ctPWAS)
 #' data(markers)
 #' data(expr)
 #'

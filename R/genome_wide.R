@@ -73,7 +73,7 @@
 #'   \item{P}{Two-sided p-value.}
 #' }
 #'
-#' @seealso \code{\link{ctOWAS_assoc_test_K}}, which takes the \code{Z}
+#' @seealso \code{\link{ctPWAS_assoc_test_K}}, which takes the \code{Z}
 #'   column as \code{gwas_z_score}.
 #'
 #' @examples
