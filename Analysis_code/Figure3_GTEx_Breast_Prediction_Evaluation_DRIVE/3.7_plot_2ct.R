@@ -298,8 +298,9 @@ plot_o <- make_comparison_plot(plot_data, "p_o", "ctPWAS")
 # ==============================================================================
 
 row1 <- cowplot::plot_grid(p1, p2, p3, nrow = 1, rel_widths = c(0.4, 0.3, 0.3), labels = c("A", "B", "C"))
-row2_right <- cowplot::plot_grid(p5, plot_m, plot_o, nrow = 3,  labels = c("E", "F"))
-row2=cowplot::plot_grid(p4, row2_right, nrow = 1,  labels = c("D"))
-p_all=cowplot::plot_grid(row1, row2, ncol = 1, rel_heights = c(1, 1))
+row2 <- cowplot::plot_grid(p4, nrow = 1,  labels = c("D"))
+row3 <- cowplot::plot_grid(p5, plot_m, plot_o, nrow = 1,  labels = c("E", "F"))
+
+p_all=cowplot::plot_grid(row1, row2, row3, ncol = 1, rel_heights = c(1, 1.1, 1))
 #p_all
-ggsave(plot = p_all, filename =file.path(figure_dir, "Figure_Comparison_MiXcan.pdf"), width = 11, height = 6.5)
+ggsave(plot = p_all, filename =file.path(figure_dir, "Figure_Comparison_MiXcan.pdf"), width = 11, height = 10)
